@@ -10,18 +10,15 @@ let estadoFabrica = {
   modoFabrica: "AUTOMATICO",
   alarma: false,
   nivelEnergia: 80,
-
   puerta: {
     estado: "CERRADA",
     ultimoAcceso: "NINGUNO"
   },
-
   prensa: {
     estado: "TRABAJANDO",
     ciclos: 0,
     error: false
   },
-
   generador: {
     estado: "NORMAL",
     consumo: 35
@@ -48,7 +45,290 @@ function actualizarEstadoPrensa() {
 }
 
 app.get("/", (req, res) => {
-  res.send("API de la Fabrica Digital Twin funcionando correctamente");
+  res.send(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control Fábrica Digital Twin</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111827;
+      color: white;
+    }
+
+    header {
+      background: #1f2937;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 3px solid #38bdf8;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .subtitulo {
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+
+    .contenedor {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .tarjeta {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      border-left: 5px solid #38bdf8;
+    }
+
+    .tarjeta h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #38bdf8;
+    }
+
+    .valor {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .normal {
+      color: #22c55e;
+    }
+
+    .medio {
+      color: #f59e0b;
+    }
+
+    .critico {
+      color: #ef4444;
+    }
+
+    .botones {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .botones h2 {
+      margin-top: 0;
+      color: #38bdf8;
+    }
+
+    button {
+      border: none;
+      padding: 12px 16px;
+      margin: 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      background: #2563eb;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .verde {
+      background: #16a34a;
+    }
+
+    .naranja {
+      background: #f59e0b;
+    }
+
+    .rojo {
+      background: #dc2626;
+    }
+
+    .gris {
+      background: #4b5563;
+    }
+
+    .panel-json {
+      background: #020617;
+      padding: 15px;
+      border-radius: 10px;
+      overflow-x: auto;
+      color: #a7f3d0;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 30px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Panel de Control - Fábrica Inteligente</h1>
+    <div class="subtitulo">API propia Node.js + Express desplegada en Render</div>
+  </header>
+
+  <div class="contenedor">
+
+    <div class="grid">
+      <div class="tarjeta">
+        <h2>Energía</h2>
+        <div id="energia" class="valor">--%</div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Generador</h2>
+        <div id="generador" class="valor">--</div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Puerta</h2>
+        <div id="puerta" class="valor">--</div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Prensa</h2>
+        <div id="prensa" class="valor">--</div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Alarma</h2>
+        <div id="alarma" class="valor">--</div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Ciclos prensa</h2>
+        <div id="ciclos" class="valor">--</div>
+      </div>
+    </div>
+
+    <div class="botones">
+      <h2>Control de energía</h2>
+      <button class="verde" onclick="llamar('/energia/80')">Energía normal 80%</button>
+      <button class="naranja" onclick="llamar('/energia/40')">Baja energía 40%</button>
+      <button class="rojo" onclick="llamar('/energia/20')">Energía crítica 20%</button>
+    </div>
+
+    <div class="botones">
+      <h2>Control de puerta</h2>
+      <button class="verde" onclick="llamar('/abrir-puerta')">Abrir puerta</button>
+      <button class="gris" onclick="llamar('/cerrar-puerta')">Cerrar puerta</button>
+    </div>
+
+    <div class="botones">
+      <h2>Control de prensa</h2>
+      <button class="verde" onclick="llamar('/prensa/TRABAJANDO')">Prensa trabajando</button>
+      <button class="naranja" onclick="llamar('/prensa/MANTENIMIENTO')">Mantenimiento</button>
+      <button class="rojo" onclick="llamar('/prensa/ERROR')">Error prensa</button>
+      <button class="gris" onclick="llamar('/prensa/APAGADA')">Apagar prensa</button>
+    </div>
+
+    <div class="botones">
+      <h2>Control general</h2>
+      <button class="rojo" onclick="llamar('/toggle-alarma')">Activar / desactivar alarma</button>
+      <button class="verde" onclick="llamar('/reset')">Reset fábrica</button>
+    </div>
+
+    <div class="botones">
+      <h2>Datos JSON actuales</h2>
+      <pre id="json" class="panel-json">{ }</pre>
+    </div>
+
+    <footer>
+      Digital Twin - Fábrica inteligente | Unity + API REST + Render
+    </footer>
+  </div>
+
+  <script>
+    async function cargarEstado() {
+      try {
+        const respuesta = await fetch('/factory');
+        const datos = await respuesta.json();
+
+        document.getElementById('energia').textContent = datos.nivelEnergia + '%';
+        document.getElementById('generador').textContent = datos.generador.estado;
+        document.getElementById('puerta').textContent = datos.puerta.estado;
+        document.getElementById('prensa').textContent = datos.prensa.estado;
+        document.getElementById('alarma').textContent = datos.alarma ? 'ACTIVA' : 'NO';
+        document.getElementById('ciclos').textContent = datos.prensa.ciclos;
+
+        pintarEstado('energia', datos.nivelEnergia);
+        pintarTexto('generador', datos.generador.estado);
+        pintarTexto('puerta', datos.puerta.estado);
+        pintarTexto('prensa', datos.prensa.estado);
+        pintarTexto('alarma', datos.alarma ? 'CRITICO' : 'NORMAL');
+
+        document.getElementById('json').textContent = JSON.stringify(datos, null, 2);
+      } catch (error) {
+        document.getElementById('json').textContent = 'Error conectando con la API';
+      }
+    }
+
+    async function llamar(ruta) {
+      await fetch(ruta);
+      await cargarEstado();
+    }
+
+    function pintarEstado(id, energia) {
+      const elemento = document.getElementById(id);
+      elemento.className = 'valor';
+
+      if (energia > 50) {
+        elemento.classList.add('normal');
+      } else if (energia >= 25) {
+        elemento.classList.add('medio');
+      } else {
+        elemento.classList.add('critico');
+      }
+    }
+
+    function pintarTexto(id, texto) {
+      const elemento = document.getElementById(id);
+      elemento.className = 'valor';
+
+      if (
+        texto === 'NORMAL' ||
+        texto === 'TRABAJANDO' ||
+        texto === 'CERRADA' ||
+        texto === 'ABIERTA'
+      ) {
+        elemento.classList.add('normal');
+      } else if (
+        texto === 'BAJO_CONSUMO' ||
+        texto === 'MANTENIMIENTO'
+      ) {
+        elemento.classList.add('medio');
+      } else {
+        elemento.classList.add('critico');
+      }
+    }
+
+    cargarEstado();
+    setInterval(cargarEstado, 3000);
+  </script>
+</body>
+</html>
+  `);
 });
 
 app.get("/factory", (req, res) => {
@@ -77,10 +357,10 @@ app.post("/factory", (req, res) => {
 app.get("/abrir-puerta", (req, res) => {
   if (estadoFabrica.alarma || estadoFabrica.puerta.estado === "BLOQUEADA") {
     estadoFabrica.puerta.estado = "ACCESO_DENEGADO";
-    estadoFabrica.puerta.ultimoAcceso = "API";
+    estadoFabrica.puerta.ultimoAcceso = "API_WEB";
   } else {
     estadoFabrica.puerta.estado = "ABIERTA";
-    estadoFabrica.puerta.ultimoAcceso = "API";
+    estadoFabrica.puerta.ultimoAcceso = "API_WEB";
   }
 
   res.json(estadoFabrica);
@@ -120,7 +400,6 @@ app.get("/energia/:valor", (req, res) => {
   }
 
   valor = Math.max(0, Math.min(100, valor));
-
   estadoFabrica.nivelEnergia = valor;
 
   if (valor >= 25) {
@@ -131,12 +410,16 @@ app.get("/energia/:valor", (req, res) => {
       estadoFabrica.prensa.error = false;
     }
 
-    if (estadoFabrica.puerta.estado === "BLOQUEADA") {
+    if (
+      estadoFabrica.puerta.estado === "BLOQUEADA" ||
+      estadoFabrica.puerta.estado === "ACCESO_DENEGADO"
+    ) {
       estadoFabrica.puerta.estado = "CERRADA";
     }
   }
 
   actualizarEstadoGenerador();
+  actualizarEstadoPrensa();
 
   res.json(estadoFabrica);
 });
@@ -169,18 +452,15 @@ app.get("/reset", (req, res) => {
     modoFabrica: "AUTOMATICO",
     alarma: false,
     nivelEnergia: 80,
-
     puerta: {
       estado: "CERRADA",
       ultimoAcceso: "NINGUNO"
     },
-
     prensa: {
       estado: "TRABAJANDO",
       ciclos: 0,
       error: false
     },
-
     generador: {
       estado: "NORMAL",
       consumo: 35
