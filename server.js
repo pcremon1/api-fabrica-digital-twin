@@ -238,7 +238,6 @@ app.get("/", (req, res) => {
     <div class="botones">
       <h2>Control de prensa</h2>
       <button class="verde" onclick="llamar('/prensa/TRABAJANDO')">Prensa trabajando</button>
-      <button class="naranja" onclick="llamar('/prensa/MANTENIMIENTO')">Mantenimiento</button>
       <button class="rojo" onclick="llamar('/prensa/ERROR')">Error prensa</button>
       <button class="gris" onclick="llamar('/prensa/APAGADA')">Apagar prensa</button>
     </div>
@@ -432,7 +431,6 @@ app.get("/prensa/:estado", (req, res) => {
     "ENCENDIDA",
     "TRABAJANDO",
     "ERROR",
-    "MANTENIMIENTO"
   ];
 
   if (!estadosValidos.includes(estado)) {
